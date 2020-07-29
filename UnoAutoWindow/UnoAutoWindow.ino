@@ -18,10 +18,12 @@ bool forceOpen = false;
 bool forceClose = false;
 
 float temp; //internal temperature
-float OutTemp; //external temperature
+float outTemp; //external temperature
 float Humidity;
-float Temp_Max;
-float Temp_Min;
+float tempMax;
+float tempMin;
+
+unsigned long waitTime = 0;
 
 void setup()
 {
@@ -51,8 +53,8 @@ void loop()
   if (stringComplete) {
     interpData();
     
-    Serial.println("Outside temp: " + String(OutTemp) + "\tInside temp: " +
-                  String(temp) + "\tMin: " + String(Temp_Min) + "/tMax: " + String(Temp_Max));
+    Serial.println("Outside temp: " + String(outTemp) + "\tInside temp: " +
+                  String(temp) + "\tMin: " + String(tempMin) + "/tMax: " + String(tempMax));
     bool isOpen = digitalRead(LIMIT) == HIGH;
     Serial.println("Window Open: " + String(isOpen));
 
@@ -72,30 +74,42 @@ void loop()
     else if(isOpen && forceClose) {
       closeWindow();
     }
-    else {
-      //automatic mode
-      if(!isOpen && OutTemp <= temp && (OutTemp >= 68 || temp >= 70)) {
+    else if (millis() > waitTime) {
+
+      if(!isOpen && (tempMax > 80 && outTemp <= temp && temp > 66)
+      || (tempMax < 68 && outTemp > temp)
+      || (tempMax <= 80 && tempMax >= 68 && outTemp >= 68 && outTemp <= 76)) {
         openWindow();
-        delay(1800000); //pause to allow temperature change, reduces opens and closes due to temperature error
-        serialDump();   //dump serial buffer to ignore old data from delay
+        waitTime = millis() + 1800000;
       }
-      else if(isOpen && (OutTemp > temp || (OutTemp < 68 && temp < 70)) {
+      else if(isOpen && (tempMax < 68 && outTemp <= temp)
+      || (tempMax >= 80 && outTemp > temp && temp < 66)
+      || (68 <= tempMax && tempMax <= 76 && (68 > outTemp || outTemp > 72))) {
         closeWindow();
-        delay(1800000);
-        serialDump();
+        waitTime = millis() + 1800000;
       }
+      
+      //automatic mode
+      /*if(!isOpen && outTemp <= temp && (outTemp >= 68 || temp >= 70)) {
+        openWindow();
+        waitTime = millis() + 1800000
+      }
+      else if(isOpen && (outTemp > temp || (outTemp < 68 && temp < 70)) {
+        closeWindow();
+        waitTime = millis() + 1800000
+      }*/
     }
   }
 }
 
 void interpData() {
-  OutTemp = inputString.substring(0,inputString.indexOf(' ')).toFloat();
+  outTemp = inputString.substring(0,inputString.indexOf(' ')).toFloat();
   inputString = inputString.substring(inputString.indexOf(' ')+1);
   Humidity = inputString.substring(0,inputString.indexOf(' ')).toFloat();
   inputString = inputString.substring(inputString.indexOf(' ')+1);
-  Temp_Min = inputString.substring(0,inputString.indexOf(' ')).toFloat();
+  tempMin = inputString.substring(0,inputString.indexOf(' ')).toFloat();
   inputString = inputString.substring(inputString.indexOf(' ')+1);
-  Temp_Max = inputString.toFloat();
+  tempMax = inputString.toFloat();
   temp = dht.readTemperature(true);
 }
 
