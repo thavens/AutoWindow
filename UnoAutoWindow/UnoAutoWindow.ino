@@ -33,9 +33,6 @@ void setup()
 
   pinMode(userOpen, INPUT);
   pinMode(userClose, INPUT);
-
-  attachInterrupt(digitalPinToInterrupt(userOpen), userCtrl, RISING);
-  attachInterrupt(digitalPinToInterrupt(userClose), userCtrl, RISING);
   
   pinMode(LIMIT, INPUT_PULLUP);
   
@@ -45,17 +42,20 @@ void setup()
   
   digitalWrite(dirPin, HIGH);
   digitalWrite(ENAPin, HIGH);
+
+  attachInterrupt(digitalPinToInterrupt(userOpen), userCtrl, RISING);
+  attachInterrupt(digitalPinToInterrupt(userClose), userCtrl, RISING);
 }
 
 void loop()
 {
+  bool isOpen = digitalRead(LIMIT) == HIGH;
   //check string completion
   if (stringComplete && inputString.length() > 20 && inputString.length() < 25) {
     interpData();
     
     Serial.println("Outside temp: " + String(outTemp) + "\tInside temp: " +
                   String(temp) + "\tMin: " + String(tempMin) + "\tMax: " + String(tempMax));
-    bool isOpen = digitalRead(LIMIT) == HIGH;
     Serial.print("Window Open: ");
     if(isOpen) {
       Serial.println("True");
@@ -72,31 +72,34 @@ void loop()
       forceOpen = false;
       forceClose = false;
     }
-
+    
     //user override mode
-    if(!isOpen && forceOpen) {
-      openWindow();
+    if(forceOpen) {
+      if(!isOpen) {
+        openWindow();
+      }
     }
-    else if(isOpen && forceClose) {
-      closeWindow();
+    else if(forceClose) {
+      if(isOpen) {
+        closeWindow();
+      }
     }
     else if (millis() > waitTime && outTemp != 0.00) {
 
-      if(!isOpen && (tempMax > 80 && outTemp <= temp && temp > 66)
+      if(!isOpen && ((tempMax > 80 && outTemp <= temp && temp > 66)
       || (tempMax < 68 && outTemp > temp)
-      || (tempMax <= 80 && tempMax >= 68 && outTemp >= 68 && outTemp <= 76)) {
+      || (tempMax <= 80 && tempMax >= 68 && outTemp >= 68 && outTemp <= 76))) {
         openWindow();
-        waitTime = millis() + 1800000;
+        waitTime = millis() + 1800000UL;
         serialDump();
       }
-      else if(isOpen && (tempMax < 68 && outTemp <= temp)
+      else if(isOpen && ((tempMax < 68 && outTemp <= temp)
       || (tempMax >= 80 && outTemp > temp && temp < 66)
-      || (68 <= tempMax && tempMax <= 76 && (68 > outTemp || outTemp > 72))) {
+      || (68 <= tempMax && tempMax <= 76 && (68 > outTemp || outTemp > 76)))) {
         closeWindow();
-        waitTime = millis() + 1800000;
+        waitTime = millis() + 1800000UL;
         serialDump();
       }
-      
       //automatic mode
       /*if(!isOpen && outTemp <= temp && (outTemp >= 68 || temp >= 70)) {
         openWindow();
@@ -115,6 +118,24 @@ void loop()
     stringComplete = false;
     serialDump();
   }
+  
+  if(forceOpen && forceClose) {
+    forceOpen = false;
+    forceClose = false;
+  }
+  
+  //user override mode
+  if(forceOpen) {
+    if(!isOpen) {
+      openWindow();
+    }
+  }
+  else if(forceClose) {
+    if(isOpen) {
+      closeWindow();
+    }
+  }
+  delay(200);
 }
 
 void interpData() {
@@ -206,10 +227,13 @@ void serialDump() {
 }
 
 void userCtrl() {
+  Serial.println("usercontrol triggered");
   if(digitalRead(userClose)) {
     forceClose = !forceClose;
+    Serial.println("user close");
   }
   else if(digitalRead(userOpen)) {
     forceOpen = !forceOpen;
+    Serial.println("user open");
   }
 }
