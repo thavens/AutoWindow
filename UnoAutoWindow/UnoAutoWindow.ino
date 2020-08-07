@@ -90,14 +90,14 @@ void loop()
       || (tempMax < 68 && outTemp > temp)
       || (tempMax <= 80 && tempMax >= 68 && outTemp >= 68 && outTemp <= 76))) {
         openWindow();
-        waitTime = millis() + 1800000UL;
+        waitTime = millis() + 720000UL;
         serialDump();
       }
       else if(isOpen && ((tempMax < 68 && outTemp <= temp)
       || (tempMax >= 80 && outTemp > temp && temp < 66)
       || (68 <= tempMax && tempMax <= 76 && (68 > outTemp || outTemp > 76)))) {
         closeWindow();
-        waitTime = millis() + 1800000UL;
+        waitTime = millis() + 720000UL;
         serialDump();
       }
       //automatic mode
@@ -194,7 +194,6 @@ void openWindow() {
 //closes window using limit switch to reduce grinding and user inaccuracy
 void closeWindow() {
   Serial.println("Closing Window");
-  return;
   digitalWrite(ENAPin, LOW);
   digitalWrite(dirPin, LOW); //set direction as close
   //begin accelleration of window while checking limit switch
