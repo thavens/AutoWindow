@@ -23,6 +23,8 @@ float Humidity;
 float tempMax;
 float tempMin;
 
+bool isOpen;
+
 unsigned long waitTime = 0;
 
 void setup()
@@ -49,7 +51,7 @@ void setup()
 
 void loop()
 {
-  bool isOpen = digitalRead(LIMIT) == HIGH;
+  isOpen = digitalRead(LIMIT) == HIGH;
   //check string completion
   if (stringComplete && inputString.length() > 20 && inputString.length() < 25) {
     interpData();
@@ -162,6 +164,7 @@ void serialEvent() {
       stringComplete = true;
     }
   }
+  delete inChar;
 }
 
 //starts with a slow acceleration of steppermotor to prevent steploss and high forces
