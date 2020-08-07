@@ -24,9 +24,10 @@ void setup() {
   WiFi.begin(ssid, password);
 
   while(WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Connection Failed Rebooting");
-    delay(2000);
-    ESP.restart();
+    Serial.println(WiFi.status());
+    delay(20);
+    WiFi.begin(ssid, password);
+    Serial.println("attempting connect again");
   }
 
   ArduinoOTA.setPort(8266);
@@ -70,11 +71,11 @@ void setup() {
 }
 
 void loop() {
+  ArduinoOTA.handle();
+  
   getWeatherData();
   Serial.println(String(Temperature) + " " + String(Humidity) + " " + String(Temp_Min) + " " + String(Temp_Max));
   delay(5000);
-
-  ArduinoOTA.handle();
 }
 
 void getWeatherData() {

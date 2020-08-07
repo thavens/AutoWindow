@@ -50,13 +50,19 @@ void setup()
 void loop()
 {
   //check string completion
-  if (stringComplete) {
+  if (stringComplete && inputString.length() > 20 && inputString.length() < 25) {
     interpData();
     
     Serial.println("Outside temp: " + String(outTemp) + "\tInside temp: " +
-                  String(temp) + "\tMin: " + String(tempMin) + "/tMax: " + String(tempMax));
+                  String(temp) + "\tMin: " + String(tempMin) + "\tMax: " + String(tempMax));
     bool isOpen = digitalRead(LIMIT) == HIGH;
-    Serial.println("Window Open: " + String(isOpen));
+    Serial.print("Window Open: ");
+    if(isOpen) {
+      Serial.println("True");
+    }
+    else {
+      Serial.println("False");
+    }
 
     // clear the string:
     inputString = "";
@@ -74,19 +80,21 @@ void loop()
     else if(isOpen && forceClose) {
       closeWindow();
     }
-    else if (millis() > waitTime) {
+    else if (millis() > waitTime && outTemp != 0.00) {
 
       if(!isOpen && (tempMax > 80 && outTemp <= temp && temp > 66)
       || (tempMax < 68 && outTemp > temp)
       || (tempMax <= 80 && tempMax >= 68 && outTemp >= 68 && outTemp <= 76)) {
         openWindow();
         waitTime = millis() + 1800000;
+        serialDump();
       }
       else if(isOpen && (tempMax < 68 && outTemp <= temp)
       || (tempMax >= 80 && outTemp > temp && temp < 66)
       || (68 <= tempMax && tempMax <= 76 && (68 > outTemp || outTemp > 72))) {
         closeWindow();
         waitTime = millis() + 1800000;
+        serialDump();
       }
       
       //automatic mode
@@ -99,6 +107,13 @@ void loop()
         waitTime = millis() + 1800000
       }*/
     }
+  }
+  else if (stringComplete) {
+    Serial.println("There was an error in the esp 8266");
+    Serial.println(inputString);
+    inputString = "";
+    stringComplete = false;
+    serialDump();
   }
 }
 
@@ -116,7 +131,7 @@ void interpData() {
 //recieve string data from esp8266 arduino
 //ran by arduino after every loop
 void serialEvent() { 
-  while (Serial.available() && !stringComplete) {
+  while (Serial.available()) {
     // get the new byte:
     char inChar = (char)Serial.read();
     // add it to the inputString:
@@ -158,6 +173,7 @@ void openWindow() {
 //closes window using limit switch to reduce grinding and user inaccuracy
 void closeWindow() {
   Serial.println("Closing Window");
+  return;
   digitalWrite(ENAPin, LOW);
   digitalWrite(dirPin, LOW); //set direction as close
   //begin accelleration of window while checking limit switch
