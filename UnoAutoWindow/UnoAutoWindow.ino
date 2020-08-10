@@ -52,74 +52,6 @@ void setup()
 void loop()
 {
   isOpen = digitalRead(LIMIT) == HIGH;
-  //check string completion
-  if (stringComplete && inputString.length() > 20 && inputString.length() < 25) {
-    interpData();
-    
-    Serial.println("Outside temp: " + String(outTemp) + "\tInside temp: " +
-                  String(temp) + "\tMin: " + String(tempMin) + "\tMax: " + String(tempMax));
-    Serial.print("Window Open: ");
-    if(isOpen) {
-      Serial.println("True");
-    }
-    else {
-      Serial.println("False");
-    }
-
-    // clear the string:
-    inputString = "";
-    stringComplete = false;
-
-    if(forceOpen && forceClose) {
-      forceOpen = false;
-      forceClose = false;
-    }
-    
-    //user override mode
-    if(forceOpen) {
-      if(!isOpen) {
-        openWindow();
-      }
-    }
-    else if(forceClose) {
-      if(isOpen) {
-        closeWindow();
-      }
-    }
-    else if (millis() > waitTime && outTemp != 0.00) {
-
-      if(!isOpen && ((tempMax > 80 && outTemp <= temp && temp > 66)
-      || (tempMax < 68 && outTemp > temp)
-      || (tempMax <= 80 && tempMax >= 68 && outTemp >= 68 && outTemp <= 76))) {
-        openWindow();
-        waitTime = millis() + 720000UL;
-        serialDump();
-      }
-      else if(isOpen && ((tempMax < 68 && outTemp <= temp)
-      || (tempMax >= 80 && outTemp > temp && temp < 66)
-      || (68 <= tempMax && tempMax <= 76 && (68 > outTemp || outTemp > 76)))) {
-        closeWindow();
-        waitTime = millis() + 720000UL;
-        serialDump();
-      }
-      //automatic mode
-      /*if(!isOpen && outTemp <= temp && (outTemp >= 68 || temp >= 70)) {
-        openWindow();
-        waitTime = millis() + 1800000
-      }
-      else if(isOpen && (outTemp > temp || (outTemp < 68 && temp < 70)) {
-        closeWindow();
-        waitTime = millis() + 1800000
-      }*/
-    }
-  }
-  else if (stringComplete) {
-    Serial.println("There was an error in the esp 8266");
-    Serial.println(inputString);
-    inputString = "";
-    stringComplete = false;
-    serialDump();
-  }
   
   if(forceOpen && forceClose) {
     forceOpen = false;
@@ -137,6 +69,50 @@ void loop()
       closeWindow();
     }
   }
+  //check string completion
+  else if (stringComplete && inputString.length() > 20 && inputString.length() < 25) {
+    interpData();
+    
+    Serial.println("Outside temp: " + String(outTemp) + "\tInside temp: " +
+                  String(temp) + "\tMin: " + String(tempMin) + "\tMax: " + String(tempMax));
+    Serial.print("Window Open: ");
+    if(isOpen) {
+      Serial.println("True");
+    }
+    else {
+      Serial.println("False");
+    }
+
+    // clear the string:
+    inputString = "";
+    stringComplete = false;
+
+    if (millis() - waitTime > 720000UL && outTemp != 0.00) {
+
+      if(!isOpen && ((tempMax > 80 && outTemp <= temp && temp > 66)
+      || (tempMax < 68 && outTemp > temp)
+      || (tempMax <= 80 && tempMax >= 68 && outTemp >= 68 && outTemp <= 76))) {
+        openWindow();
+        waitTime = millis();
+        serialDump();
+      }
+      else if(isOpen && ((tempMax < 68 && outTemp <= temp)
+      || (tempMax >= 80 && (outTemp > temp || temp < 66))
+      || (68 <= tempMax && tempMax <= 76 && 68 < outTemp && outTemp < 76))) {
+        closeWindow();
+        waitTime = millis();
+        serialDump();
+      }
+    }
+  }
+  else if (stringComplete) {
+    Serial.println("There was an error in the esp 8266");
+    Serial.println(inputString);
+    inputString = "";
+    stringComplete = false;
+    serialDump();
+  }
+  
   delay(200);
 }
 
@@ -164,7 +140,6 @@ void serialEvent() {
       stringComplete = true;
     }
   }
-  delete inChar;
 }
 
 //starts with a slow acceleration of steppermotor to prevent steploss and high forces
