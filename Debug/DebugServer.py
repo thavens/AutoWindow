@@ -4,18 +4,20 @@ import threading
 import traceback
 import sys
 
+ip = 'IP'
+port = 'Port Number' 
+
 buff = []
 def createServer():
-    now = datetime.now()
     with socket(AF_INET, SOCK_STREAM) as serversocket:
-        serversocket.bind(('192.168.1.6',25565))
+        serversocket.bind((ip, int(port)))
         serversocket.listen(5)
         while True:
             try:
                 (client, address) = serversocket.accept()
 
                 client.recv(5000).decode('cp1252')
-                dt = now.strftime('%d/%m/%Y %H:%M:%S')
+                dt = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
                 rd = dt + ': ' + client.recv(5000).decode('cp1252')
                 print(rd)
                 buff.append(rd)

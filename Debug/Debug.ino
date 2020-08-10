@@ -1,16 +1,9 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 
-//String ssid = "YANG GANG!!!";
-//String pass = "#TryHackingMyShittyWIFILMFAO";
-//String ip = "192.168.1.6:25565";
-
-#define SERVER_IP "192.168.1.6:25565"
-
-#ifndef STASSID
-#define STASSID "YANG GANG!!!"
-#define STAPSK  "#TryHackingMyShittyWIFILMFAO"
-#endif
+const String SERVER_IP = "IP address";
+const String ssid = "ssid";
+const String pass = "password";
 
 String data = "";
 unsigned long waitTime = 0;
@@ -23,7 +16,7 @@ void setup() {
   Serial.println();
   Serial.println();
 
-  WiFi.begin(STASSID, STAPSK);
+  WiFi.begin(ssid, pass);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -50,7 +43,7 @@ void loop() {
     HTTPClient http;
 
     Serial.print("[HTTP] begin...\n");
-    http.begin(client, "http://" SERVER_IP "/postplain/");
+    http.begin(client, "http://" + SERVER_IP + "/postplain/");
     http.addHeader("Content-Type", "text/html");
 
     Serial.print("[HTTP] POST...\n");
