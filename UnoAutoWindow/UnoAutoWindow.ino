@@ -88,16 +88,16 @@ void loop()
     stringComplete = false;
 
     if (millis() - waitTime > 720000UL && outTemp != 0.00) {
-      if(!isOpen && ((tempMax > 80 && outTemp <= temp && temp > 66)
+      if(!isOpen && ((tempMax > 76 && outTemp <= temp && temp > 66)
       || (tempMax < 68 && outTemp > temp)
-      || (tempMax <= 80 && tempMax >= 68 && outTemp >= 68 && outTemp <= 76))) {
+      || (tempMax <= 76 && tempMax >= 68 && ((outTemp >= 68 && outTemp <= 76) || (temp >= 68 || temp >= 74))))) {
         openWindow();
         waitTime = millis();
         serialDump();
       }
       else if(isOpen && ((tempMax < 68 && outTemp <= temp)
       || (tempMax >= 80 && (outTemp > temp || temp < 66))
-      || (68 <= tempMax && tempMax <= 76 && (68 < outTemp || outTemp < 76)))) {
+      || (68 <= tempMax && tempMax <= 76 && (68 > outTemp || outTemp < 76) && temp > 68 && temp < 74))) {
         closeWindow();
         waitTime = millis();
         serialDump();
