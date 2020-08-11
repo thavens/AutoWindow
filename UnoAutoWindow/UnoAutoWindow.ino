@@ -25,7 +25,7 @@ float tempMin;
 
 bool isOpen;
 
-unsigned long waitTime = 0;
+unsigned long waitTime = -720000UL;
 
 void setup()
 {
