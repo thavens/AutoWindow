@@ -8,7 +8,7 @@ This window opener gets and parses weather data from Openweather API using an ES
 WARNING esp-01 will burn out after a period of useage. I speculate that this is due to ESP OTA causing over heating.
 
 # Complete
--User window override
+-User window override <br>
 -Some sound reduction
 
 # Currently in Development
