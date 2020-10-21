@@ -12,9 +12,9 @@ WARNING esp-01 will burn out after a period of useage. I speculate that this is 
 -Some sound reduction
 
 # Currently in Development
--rewriting to use NODEMCU ESP 8266 instead of arduino UNO combined with ESP8266-01
--small lcd status display
--More robust decision making
+-rewriting to use NODEMCU ESP 8266 instead of arduino UNO combined with ESP8266-01 \n
+-small lcd status display \n
+-More robust decision making \n
 
 # Future
 -Remote / IR user window override
