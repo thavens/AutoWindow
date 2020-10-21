@@ -146,24 +146,18 @@ void openWindow() {
   Serial.println("Opening Window");
   digitalWrite(ENAPin, LOW);
   digitalWrite(dirPin, HIGH);
-  for (int i = 0; i < 400; i++) {
+  for (int i = 0; i < 600; i++) {
+    int d = 195 - 135 * (((double)i)/600);
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(800 - (i * 0.75));
+    delayMicroseconds(d);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(800 - (i * 0.75));
+    delayMicroseconds(d);
   }
-  for (int i = 0; i < 2000; i++) {
+  for (unsigned int i = 0; i < 5.65 * 6400; i++) {
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(500 - (i * 0.15625));
+    delayMicroseconds(60);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(500 - (i * 0.15625));
-  }
-  //7400
-  for (int i = 0; i < 7400; i++) {
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(200);
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(200);
+    delayMicroseconds(60);
   }
   digitalWrite(ENAPin, HIGH);
 }
@@ -174,24 +168,19 @@ void closeWindow() {
   digitalWrite(ENAPin, LOW);
   digitalWrite(dirPin, LOW); //set direction as close
   //begin accelleration of window while checking limit switch
-  for (int i = 0; i < 400 && digitalRead(LIMIT) == HIGH; i++) {
+  for (int i = 0; i < 600 && digitalRead(LIMIT) == HIGH; i++) {
+    int d = 195 - 135 * (((double)i)/600);
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(800 - (i * 0.75));
+    delayMicroseconds(d);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(800 - (i * 0.75));
+    delayMicroseconds(d);
   }
-  for (int i = 0; i < 2000 && digitalRead(LIMIT) == HIGH; i++) {
-    digitalWrite(stepPin, HIGH);
-    delayMicroseconds(500 - (i * 0.15625));
-    digitalWrite(stepPin, LOW);
-    delayMicroseconds(500 - (i * 0.15625));
-  }
-  //while checking limit switch move to high speed
+  //close while checking limit switch
   while(digitalRead(LIMIT) == HIGH) {
     digitalWrite(stepPin, HIGH);
-    delayMicroseconds(200);
+    delayMicroseconds(60);
     digitalWrite(stepPin, LOW);
-    delayMicroseconds(200);
+    delayMicroseconds(60);
   }
   digitalWrite(ENAPin, HIGH);
 }
