@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        function sendOpen() {
+
+        }
+        function sendClose() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://192.168.1.18/change', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send('window=close')
+        }
+    </script>
+</head>
+<body>
+    <p> ESP window </p>
+    <p id='data'></p>
+    <button type='button' onClick=sendOpen()>Open Window</button>
+    <button type='button' onClick=sendClose()>Close Window</button>
+<script>
+    document.getElementById('data').innerHTML = 'data here'
+</script>
+</body>
+</html>
