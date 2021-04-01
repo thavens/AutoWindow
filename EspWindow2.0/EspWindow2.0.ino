@@ -1,70 +1,59 @@
-/* 1. create website to change state - Done
- * 2. read in state change through API - Done
- * 3. open and close window - Done
- * 4. add inside temperature to the website 
- *    - import - done
- *    - initialize - done
- *    - find data - done
- *    - report - done
- * 5. get outside temperature ever ten minutes
- *    - variables - done
- *    - get request - done
- *    - retport - done
- */
- 
 #include <ArduinoJson.h>
 #include <DHT.h>;
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
-#define dirPin 13     //stepper motor direction pin
-#define stepPin 12    //pin to indicate step on motor
-#define ENAPin 11     //stepper motor ative pin
-#define LIMIT 5       //limit switch pin connected to normally closed # true = high = opened, false = low = closed
-#define DHTPin 4     // tempsensor pin (inside house)
+#define dirPin 5     //stepper motor direction pin
+#define stepPin 4    //pin to indicate step on motor
+#define ENAPin 0     //stepper motor ative pin
+#define LIMIT 2       //limit switch pin connected to normally closed # true = high = opened, false = low = closed
+#define DHTPin 14     // tempsensor pin (inside house)
 #define DHTType DHT22   // DHT 22  (AM2302)
+extern "C" {
+#include "user_interface.h"
+}
 
 DHT dht(DHTPin, DHTType); // Initialize DHT sensor
 ESP8266WebServer server(80);
 
 const char* ssid     = "ssid";
-const char* password = "password";
-const String APIKEY = "Open Weather API Key";                                 
-const String ZIPCode = "ZIP";   //ZIPCode
+const char* password = "pass";
+const String APIKEY = "key";                                 
+const String ZIPCode = "zipcode";   
 float outTemp;
 float humidity;
 float tempMin;
 float tempMax;
 String servername="api.openweathermap.org";              // remote server program will connect to
 String result;
-unsigned long oldTime = millis() - 60000;
+unsigned long oldTime = millis() - 600000;
 
 //############################[html code]######################################
 
 const char* html = "<!DOCTYPE html>\
 <html>\
 <head>\
-    <script>\
-        function sendOpen() {\
-            var xhr = new XMLHttpRequest();\
-            xhr.open('POST', 'http://192.168.1.18/change', true);\
-            xhr.setRequestHeader('Content-Type', 'application/json');\
-            xhr.send('open')\
-        }\
-        function sendClose() {\
-            var xhr = new XMLHttpRequest();\
-            xhr.open('POST', 'http://192.168.1.18/change', true);\
-            xhr.setRequestHeader('Content-Type', 'application/json');\
-            xhr.send('close')\
-        }\
-    </script>\
+<script>\
+function sendOpen() {\
+var xhr = new XMLHttpRequest();\
+xhr.open('POST', 'http://192.168.1.18/change', true);\
+xhr.setRequestHeader('Content-Type', 'application/json');\
+xhr.send('open')\
+}\
+function sendClose() {\
+var xhr = new XMLHttpRequest();\
+xhr.open('POST', 'http://192.168.1.18/change', true);\
+xhr.setRequestHeader('Content-Type', 'application/json');\
+xhr.send('close')\
+}\
+</script>\
 </head>\
 <body>\
-    <h1> ESP window </h1>\
-    <p>Window is: %s</p>\
-    <p id='data'>Indoor Temp: %f&#8457, Outdoor Temp: %f&#8457, High Temp: %f&#8457, Low Temp: %f&#8457</p>\
-    <button type='button' onClick=sendOpen()>Open Window</button>\
-    <button type='button' onClick=sendClose()>Close Window</button>\
+<h1> ESP window </h1>\
+<p>Window is: %s</p>\
+<p id='data'>Indoor Temp: %.2f&#8457, Outdoor Temp: %.2f&#8457, High Temp: %.2f&#8457, Low Temp: %.2f&#8457</p>\
+<button type='button' onClick=sendOpen()>Open Window</button>\
+<button type='button' onClick=sendClose()>Close Window</button>\
 </body>\
 </html>";
 
@@ -73,7 +62,6 @@ const char* html = "<!DOCTYPE html>\
 void setup() {
   Serial.begin(115200);
   dht.begin();
-
   pinMode(LIMIT, INPUT_PULLUP);
 
   pinMode(stepPin, OUTPUT);
@@ -104,16 +92,19 @@ void setup() {
 
 void loop() {
   if(millis() > oldTime + 600000) {
+    Serial.println("get weather");
     getWeatherData();
     oldTime = millis();
   }
   server.handleClient();
+  delay(1);
 }
 
 //&#8457 is html-code for degree farenheit
 void handleRoot() {
-  int temp = dht.readTemperature(true);
-  char buff[840];
+  //float temp = dht.readTemperature(true);
+  float temp = 14;
+  char buff[705];
   char* state;
   if(digitalRead(LIMIT)) {
     state = "opened";
@@ -122,8 +113,7 @@ void handleRoot() {
     state = "closed";
   }
   sprintf(buff, html, state, temp, outTemp, tempMax, tempMin);
-  
-  server.sendContent(buff);
+  server.send(200, "text/html", buff);
 }
 
 void handleForm() {
@@ -132,9 +122,10 @@ void handleForm() {
     state = server.arg(0);
   }
   else {
-    server.send(400);
+    server.send(400, "text/plain", "wrong request");
     return;
   }
+  Serial.println(state);
   if(state.indexOf("close") >= 0 && digitalRead(LIMIT)) {
     closeWindow();
   }
@@ -146,11 +137,11 @@ void handleForm() {
     return;
   }
   server.send(200, "text/plain", "state changed");
-  Serial.println(state);
 }
 
 //starts with a slow acceleration of steppermotor to prevent steploss and high forces
 void openWindow() {
+  ESP.wdtDisable();
   Serial.println("Opening Window");
   digitalWrite(ENAPin, LOW);
   digitalWrite(dirPin, HIGH);
@@ -174,10 +165,12 @@ void openWindow() {
     delayMicroseconds(200);
   }
   digitalWrite(ENAPin, HIGH);
+  ESP.wdtEnable(1000);
 }
 
 //closes window using limit switch to reduce grinding and user inaccuracy
 void closeWindow() {
+  ESP.wdtDisable();
   Serial.println("Closing Window");
   digitalWrite(ENAPin, LOW);
   digitalWrite(dirPin, LOW); //set direction as close
@@ -202,6 +195,7 @@ void closeWindow() {
     delayMicroseconds(200);
   }
   digitalWrite(ENAPin, HIGH);
+  ESP.wdtEnable(1000);
 }
 
 void getWeatherData() {
