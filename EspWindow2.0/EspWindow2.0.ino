@@ -3,28 +3,25 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 
-#define dirPin 5     //stepper motor direction pin
-#define stepPin 4    //pin to indicate step on motor
-#define ENAPin 0     //stepper motor ative pin
-#define LIMIT 2       //limit switch pin connected to normally closed # true = high = opened, false = low = closed
-#define DHTPin 14     // tempsensor pin (inside house)
-#define DHTType DHT22   // DHT 22  (AM2302)
-extern "C" {
-#include "user_interface.h"
-}
+#define dirPin 5     //stepper motor direction pin D1
+#define stepPin 4    //pin to indicate step on motor D2
+#define ENAPin 0     //stepper motor ative pin D3
+#define LIMIT 2      //limit switch pin connected to normally closed # true = high = opened, false = low = closed D4
+#define DHTPin 14    // tempsensor pin (inside house) D5
+#define DHTType DHT22// DHT 22  (AM2302)
 
 DHT dht(DHTPin, DHTType); // Initialize DHT sensor
 ESP8266WebServer server(80);
 
 const char* ssid     = "ssid";
 const char* password = "pass";
-const String APIKEY = "key";                                 
-const String ZIPCode = "zipcode";   
+const String APIKEY = "key";
+const String ZIPCode = "zipcode";
+const String servername = "api.openweathermap.org";  // remote server program will connect to
 float outTemp;
 float humidity;
 float tempMin;
 float tempMax;
-String servername="api.openweathermap.org";              // remote server program will connect to
 String result;
 unsigned long oldTime = millis() - 600000;
 
@@ -102,8 +99,7 @@ void loop() {
 
 //&#8457 is html-code for degree farenheit
 void handleRoot() {
-  //float temp = dht.readTemperature(true);
-  float temp = 14;
+  float temp = dht.readTemperature(true);
   char buff[705];
   char* state;
   if(digitalRead(LIMIT)) {
@@ -127,16 +123,16 @@ void handleForm() {
   }
   Serial.println(state);
   if(state.indexOf("close") >= 0 && digitalRead(LIMIT)) {
+    server.send(200, "text/plain", "state changed");
     closeWindow();
   }
   else if(state.indexOf("open") >= 0 && !digitalRead(LIMIT)) {
+    server.send(200, "text/plain", "state changed");
     openWindow();
   }
   else {
     server.send(400, "text/plain", "can't change");  //attempt to open or close when already in that state
-    return;
   }
-  server.send(200, "text/plain", "state changed");
 }
 
 //starts with a slow acceleration of steppermotor to prevent steploss and high forces
