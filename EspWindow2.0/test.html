@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+function sendClose() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", 192.168.1.18, true)
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(JSON.stringify({
+        window : "close"
+    }));
+}
+</script>
+</head>
+<body>
+
+<h1>A Web Page</h1>
+<p id="demo">A Paragraph</p>
+<button type="button" onclick="sendClose()">Try it</button>
+
+</body>
+</html>
