@@ -3,12 +3,7 @@ Automatic window for my window!
 use to your liking
 
 # How It Works
-This window opener gets and parses weather data from Openweather API using an ESP8266 (ESP-01) which is then serially transmits the data to the Arduino UNO. The arduino UNO is programmed to control the window with stepper motors interfaced to the window with a rack and pinion. The window has a limit switch for the closed state to guarantee accurate closing ever time.
-
-# Currently in Development
--User window override
--More robust decision making
+NODEMCU ESP8266EX gets weather data from the open weather api every 10 min. Runs a webserver that serves html, with the inside/outside temperature data and buttons to open and close the window, to client and recieves post requests to open or close the window. 
 
 # Future
--Remote / IR user window override
--window locking system
+- Would like to reimplement automatic open, but esp8266 seems to run out of resources easily when serving html. May need to switch to raspi.
