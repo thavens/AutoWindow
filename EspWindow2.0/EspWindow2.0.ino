@@ -6,8 +6,8 @@
 #define dirPin 5     //stepper motor direction pin D1
 #define stepPin 4    //pin to indicate step on motor D2
 #define ENAPin 0     //stepper motor ative pin D3
-#define LIMIT 2      //limit switch pin connected to normally closed # true = high = opened, false = low = closed D4
-#define DHTPin 14    // tempsensor pin (inside house) D5
+#define LIMIT 14      //limit switch pin connected to normally closed # true = high = opened, false = low = closed D4
+#define DHTPin 12    // tempsensor pin (inside house) D5
 #define DHTType DHT22// DHT 22  (AM2302)
 
 DHT dht(DHTPin, DHTType); // Initialize DHT sensor
