@@ -5,7 +5,7 @@
 
 #define dirPin 5     //stepper motor direction pin D1
 #define stepPin 4    //pin to indicate step on motor D2
-#define ENAPin 0     //stepper motor ative pin D3
+#define ENAPin 2     //stepper motor ative pin D3
 #define LIMIT 14      //limit switch pin connected to normally closed # true = high = opened, false = low = closed D4
 #define DHTPin 12    // tempsensor pin (inside house) D5
 #define DHTType DHT22// DHT 22  (AM2302)
@@ -16,7 +16,7 @@ ESP8266WebServer server(80);
 const char* ssid     = "ssid";
 const char* password = "pass";
 const String APIKEY = "key";
-const String ZIPCode = "zipcode";
+const String ZIPCode = "zip";
 const String servername = "api.openweathermap.org";  // remote server program will connect to
 float outTemp;
 float humidity;
@@ -58,6 +58,7 @@ xhr.send('close')\
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("fuck");
   dht.begin();
   pinMode(LIMIT, INPUT_PULLUP);
 
@@ -65,7 +66,7 @@ void setup() {
   pinMode(dirPin, OUTPUT);
   pinMode(ENAPin, OUTPUT);
 
-  digitalWrite(dirPin, HIGH);
+  //digitalWrite(dirPin, HIGH);
   digitalWrite(ENAPin, HIGH);
 
   // Connect to Wi-Fi network with SSID and password
